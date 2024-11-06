@@ -1,0 +1,44 @@
+name: Node Workflow
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+  actions: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  default:
+    name: Default
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      
+      - name: Git status
+        id: git-status-1
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_GH_TOKEN }}
+        run: git status
+
+      - name: Bump version
+        if: github.event.pull_request.merged == true
+        run: npm version patch --no-git-tag-version --commit-hooks false
+
+      - name: Create version update PR
+        if: github.event.pull_request.merged == true
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_GH_TOKEN }}
+        run: gh pr create --base ${{ github.event.pull_request.base.ref }} --head "${{ github.event.pull_request.head.ref }}-version-update" --title "Automatic Version Bump" --body "Automatic PR created for version update" --label "auto-merge"
