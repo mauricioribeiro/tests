@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest  
 
     steps:
-      - name: Check if PR has the specific label
+      - name: Check if PR has auto-merge label
         id: is-auto-merge-pr
         uses: actions/github-script@v6
         with:
