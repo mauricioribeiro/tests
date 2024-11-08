@@ -14,8 +14,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  default:
-    name: Default
+  node-workflow:
+    name: Node Workflow
     runs-on: ubuntu-latest
 
     steps:
