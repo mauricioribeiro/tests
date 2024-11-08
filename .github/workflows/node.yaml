@@ -29,7 +29,7 @@ jobs:
 
       - name: Bump version
         if: github.event.pull_request.merged == true
-        run: npm version patch --no-git-tag-version --commit-hooks false
+        run: cd npm && npm version patch --no-git-tag-version --commit-hooks false
 
       - name: Set up Git configuration
         run: |
@@ -40,7 +40,7 @@ jobs:
         id: create-version-update-branch
         run: |
           git checkout -b "${{ github.event.pull_request.head.ref }}-version-update"
-          git add package.json package-lock.json
+          git add npm/package.json npm/package-lock.json
           git commit -m "Automatic Version Bump"
           git push origin "${{ github.event.pull_request.head.ref }}-version-update"
 
