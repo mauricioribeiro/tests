@@ -26,19 +26,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-      
-      - name: Git status
-        id: git-status-1
-        env:
-          GH_TOKEN: ${{ secrets.PUBLISH_GH_TOKEN }}
-        run: git status
 
       - name: Bump version
         if: github.event.pull_request.merged == true
         run: npm version patch --no-git-tag-version --commit-hooks false
 
+      - name: Set up Git configuration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create version update branch
+        id: create-version-update-branch
+        run: |
+          git checkout -b "${{ github.event.pull_request.head.ref }}-version-update"
+          git add package.json package-lock.json
+          git commit -m "Automatic Version Bump"
+          git push origin "${{ github.event.pull_request.head.ref }}-version-update"
+
+      - name: Git status
+        id: git-status-1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git status
+
       - name: Create version update PR
         if: github.event.pull_request.merged == true
         env:
-          GH_TOKEN: ${{ secrets.PUBLISH_GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr create --base ${{ github.event.pull_request.base.ref }} --head "${{ github.event.pull_request.head.ref }}-version-update" --title "Automatic Version Bump" --body "Automatic PR created for version update" --label "auto-merge"
