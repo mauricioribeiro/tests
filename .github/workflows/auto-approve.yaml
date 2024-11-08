@@ -1,8 +1,6 @@
 name: Auto-Merge Workflow
 
-on:
-  check_run:
-    types: [completed]
+on: pull_request_target
 
 permissions:
   pull-requests: write
