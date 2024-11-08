@@ -1,0 +1,32 @@
+name: Auto-Merge Workflow
+
+on: pull_request_target
+
+permissions:
+  pull-requests: write
+
+jobs:
+  auto-approve:
+    runs-on: ubuntu-latest  
+
+    steps:
+      - name: Check if PR has the specific label
+        id: is-auto-merge-pr
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const labelName = 'auto-merge'; 
+            const labels = context.payload.pull_request.labels;
+            return labels.some(label => label.name === labelName);
+          result-encoding: string
+
+      - name: Approve PR
+        if: steps.is-auto-merge-pr.outputs.result == 'true'
+        uses: hmarr/auto-approve-action@v4
+
+      - name: Merge  PR
+        if: steps.is-auto-merge-pr.outputs.result == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PUBLISH_GH_TOKEN }}
+        run: gh pr merge --merge --delete-branch --auto "${{ github.event.pull_request.head.ref }}-version-update"
+
